@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import Papa from 'papaparse';
 import ReactPlayer from 'react-player';
 
-const CSV_URL = 'https://raw.githubusercontent.com/andygruber/songseeker-hitster-playlists/refs/heads/main/hitster-de.csv';
+const CSV_URL = './hitster-de.csv';
 const STORAGE_KEY = 'hitster-session';
 
 function shuffle(arr) {

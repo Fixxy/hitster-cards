@@ -24,14 +24,14 @@ export default function App() {
 	const [playing, setPlaying] = useState(true);
 	const [volume, setVolume] = useState(0.8);
 	const [videoLoading, setVideoLoading] = useState(true);
+	// ensure that restoring the session runs only once (bypass StrictMode double run)
+	const restoredRef = useRef(false);
 
 	useEffect(() => {
-		// try to read current key, fall back to older key name if present
-		let saved = localStorage.getItem(STORAGE_KEY);
-		if (!saved) {
-			saved = localStorage.getItem('hitsterSession');
-		}
+		if (restoredRef.current) return;
+		restoredRef.current = true;
 
+		let saved = localStorage.getItem(STORAGE_KEY);
 		if (saved) {
 			try {
 				const parsed = JSON.parse(saved);
@@ -47,6 +47,12 @@ export default function App() {
 					setIndex(parsed.index);
 					setRows(parsed.rows);
 					setLoading(false);
+					// persist immediately to avoid races from StrictMode double-invocation
+					localStorage.setItem(STORAGE_KEY, JSON.stringify({
+						order: parsed.order,
+						index: parsed.index,
+						rows: parsed.rows
+					}));
 					return;
 				}
 			} catch (e) {
@@ -80,6 +86,7 @@ export default function App() {
 		});
 	}, []);
 
+	// persist session whenever order/index/rows change
 	useEffect(() => {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify({ order, index, rows }));
 	}, [order, index, rows]);
@@ -95,9 +102,13 @@ export default function App() {
 	};
 
 	const next = () => {
+		if (order.length === 0) return;
 		setRevealed(false);
 		setVideoLoading(true);
-		setIndex((i) => Math.min(i + 1, order.length));
+		setIndex(prevIndex => {
+			const updatedIndex = Math.min(prevIndex + 1, Math.max(0, order.length - 1));
+			return updatedIndex;
+		});
 	};
 
 	const current = rows[order[index]];
@@ -105,7 +116,7 @@ export default function App() {
 	return (
 		<div className='app'>
 			<header className='top'>
-				<h1>Hitster Cards</h1>
+				<h1>Hitster Trainer</h1>
 				<div className='controls'>
 					<button onClick={startNew} className='btn primary'>Start New Session</button>
 				</div>

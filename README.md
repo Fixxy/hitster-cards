@@ -7,7 +7,6 @@ data source: https://github.com/andygruber/songseeker-hitster-playlists
 run locally:
 
 1. npm install
-2. npm run dev
+2. npm run start
 
 open http://localhost:3030
-
